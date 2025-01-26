@@ -1,9 +1,10 @@
 import { ChangeEventHandler } from "react";
 import WeaponOptions from "./WeaponOptions";
 import "./CreateGame.css";
+import { Weapon } from "../constants/types";
 
 interface ICreateGameProps {
-  weapon: string | null;
+  weapon: Weapon;
   onWeaponSelect: ChangeEventHandler<HTMLInputElement>;
   onFormSubmit: ChangeEventHandler<HTMLFormElement>;
 }

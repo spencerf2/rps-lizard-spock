@@ -3,8 +3,14 @@ import "./AwaitingPlayer2.css";
 
 interface IAwaitingPlayer2Props {
   contractAddress: string;
+  currentUserAddress: string;
+  player1Address: string;
 }
-function AwaitingPlayer2({ contractAddress }: IAwaitingPlayer2Props) {
+function AwaitingPlayer2({
+  contractAddress,
+  currentUserAddress,
+  player1Address,
+}: IAwaitingPlayer2Props) {
   const [copyText, setCopyText] = useState("Click to copy");
 
   const handleCopy = async () => {
@@ -22,12 +28,15 @@ function AwaitingPlayer2({ contractAddress }: IAwaitingPlayer2Props) {
   return (
     <div>
       <h2>Player 2 has X minutes and Y seconds to move!</h2>
-
-      <h3>Send Player 2 the contract address below:</h3>
-      <h4>{copyText}</h4>
-      <h4 id="contract-address" onClick={handleCopy}>
-        {contractAddress}
-      </h4>
+      {currentUserAddress === player1Address && (
+        <>
+          <h3>Send Player 2 the contract address below:</h3>
+          <h4>{copyText}</h4>
+          <h4 id="contract-address" onClick={handleCopy}>
+            {contractAddress}
+          </h4>
+        </>
+      )}
     </div>
   );
 }
