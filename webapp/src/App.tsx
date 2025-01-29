@@ -207,7 +207,7 @@ function App() {
     const player1Choices: Player1Choices = {
       weapon: weapon,
       stakeAmount: event.target.stake.value,
-      opponentAddress: event.target.ethereumAddress.value,
+      player2Address: event.target.ethereumAddress.value,
     };
     const deployedContractAddress = await deploy(player1Choices, signer);
     setContractAddress(deployedContractAddress);
