@@ -18,7 +18,7 @@ export enum GameStatus {
 export type Player1Choices = {
   weapon: Weapon;
   stakeAmount: string;
-  opponentAddress: string;
+  player2Address: string;
 };
 
 export type GameResult = {

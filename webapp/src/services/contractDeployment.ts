@@ -19,7 +19,7 @@ async function deploy(player1Choices: Player1Choices, signer: ethers.JsonRpcSign
   const {c1Hash, salt} = getC1Hash(player1Choices.weapon);
   const stakeInWei = ethers.parseEther(player1Choices.stakeAmount);
 
-  const j2 = player1Choices.opponentAddress;
+  const j2 = player1Choices.player2Address;
   const contract = await factory.deploy(c1Hash, j2, {
     value: stakeInWei,
   });
