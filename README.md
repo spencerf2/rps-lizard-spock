@@ -46,11 +46,11 @@ npm run dev
 
 ## Instructions
 
-You may test it out by visiting: WEBSITE_TO_BE_ADDED_HERE_LATER
+You may test it out by visiting: https://spencerf2.github.io/rps-lizard-spock/
 
 - Suggested: Open your browser console while playing to see the game's state transitions. Note that UI improvements are listed under the "Future improvements" section below. (You can access the browser console by right clicking anywhere on the game and selecting "Inspect". Then you can select the "Console" tab.)
 
-- Visit WEBSITE_TO_BE_ADDED_HERE_LATER.
+- Visit https://spencerf2.github.io/rps-lizard-spock/.
 - Create a MetaMask account if you don't already have one.
 - Install the MetaMask browser extension (Chromium based browsers are recommended [like Google Chrome or Microsoft Edge]).
 - Switch networks to the Sepolia testnet. You may need to select "Show test networks" for it to be a visible option.
@@ -107,6 +107,8 @@ Note:
 - Show that a game was never played, rather than showing the game was a tie or that Player 2 won
   - Currently Player 2 / a Spectator erroneously sees the game was a tie when Player 2 never made their move
   - Currently Player 2 / a Spectator erroneously sees that Player 2 won when Player 1 does not reveal the results
+- When players are using different browsers (ex.: Player 1 in Microsoft Edge and Player 2 in Google Chrome), players need to manually refresh their page for game updates.
+  - Having the game detect oponent moves and auto refresh would be ideal.
 
 ### Technical Improvements
 
