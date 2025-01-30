@@ -26,14 +26,19 @@ function ShowResults({
         : "Spectator";
 
   const getResultMessage = () => {
+    let result: string;
+
     if (currentViewer === "Spectator") {
-      return winner
+      result = winner
         ? `${winner === player1Address ? "Player 1" : "Player 2"} Won!`
         : "Game Tied!";
+    } else if (winner === null) {
+      result = "Game Tied!";
+    } else {
+      result = winner === currentUserAddress ? "You Won!" : "You Lost...";
     }
 
-    if (winner === null) return "Game Tied!";
-    return winner === currentUserAddress ? "You Won!" : "You Lost...";
+    return result;
   };
 
   const getWeaponText = (weaponNumber: Weapon) => {

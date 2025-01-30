@@ -18,7 +18,7 @@ import {
   GameResult,
 } from "./constants/types";
 import { RPS_ABI } from "./constants/contractData";
-import getPlayer1WeaponFromLocalChain from "./services/getPlayer1WeaponLocalChain";
+import getPlayer1WeaponFromLocalChain from "./services/getPlayer1WeaponFromLocalChain";
 
 function App() {
   const [gameStatus, setGameStatus] = useState<GameStatus>(GameStatus.Initial);
@@ -73,10 +73,25 @@ function App() {
       }
       setProvider(_provider);
     } catch (error) {
-      console.log(`There was an error connecting: ${error}`);
+      console.error(`There was an error connecting: ${error}`);
     } finally {
       setIsConnecting(false);
     }
+  };
+
+  const getGameSecret = (contractAddress: string): GameSecret | null => {
+    // ** Retrieve gameSecret from local storage and 'unstringify' its values **
+    const storedGameSecret = localStorage.getItem(
+      `rps_game_${contractAddress}`,
+    );
+    if (!storedGameSecret) return null;
+
+    const gameSecret = JSON.parse(storedGameSecret);
+    const originalGameSecret: GameSecret = {
+      salt: BigInt(gameSecret.salt),
+      weapon: Number(gameSecret.weapon) as Weapon,
+    };
+    return originalGameSecret;
   };
 
   const updateGameStatusAndStates = async (
@@ -86,6 +101,7 @@ function App() {
     addressPlayer1: string,
     addressPlayer2: string,
     player2Move: Weapon,
+    player2TimedOut?: boolean,
   ): Promise<void> => {
     if (currentUserAddress === addressPlayer1) {
       // TODO: Connect to signer here
@@ -93,11 +109,43 @@ function App() {
       // TODO: Connect to signer here
     }
 
-    if (player2Move && Number(stakeAmount) === 0) {
+    if (Number(stakeAmount) === 0) {
       // Game is finished. Get all data before updating state
-      const weapon = await getPlayer1WeaponFromLocalChain(provider, address);
 
-      if (weapon !== undefined) {
+      if (player2TimedOut !== undefined) {
+        // Timeout claimed by a player
+        let player1Weapon = Weapon.Null;
+
+        if (player2TimedOut) {
+          // Player 1 must have called the timeout so we can get their weapon
+          // from local storage
+          const gameSecret = getGameSecret(address);
+          if (gameSecret) {
+            player1Weapon = gameSecret.weapon;
+          }
+        }
+        const gameResult: GameResult = {
+          player1Weapon,
+          player2Weapon: player2TimedOut ? Weapon.Null : player2Move,
+          player1Address: addressPlayer1,
+          player2Address: addressPlayer2,
+          winner: player2TimedOut ? addressPlayer1 : addressPlayer2,
+          stake: stakeAmount,
+        };
+
+        setPlayer1Weapon(gameResult.player1Weapon);
+        setPlayer2Weapon(gameResult.player2Weapon);
+        setPlayer1Address(gameResult.player1Address);
+        setPlayer2Address(gameResult.player2Address);
+        setWinner(gameResult.winner);
+        setStake(gameResult.stake);
+        setGameStatus(GameStatus.Finished);
+      } else {
+        // Game is over but no one specifically pushed a "Claim Winnings via Timeout!" button
+
+        // TODO: Check for env and use getPlayer1WeaponFromEtherscan if production
+        const weapon = await getPlayer1WeaponFromLocalChain(provider, address);
+
         const player1Wins = await rpsContract.win(weapon, player2Move);
 
         const gameResult: GameResult = {
@@ -105,11 +153,12 @@ function App() {
           player2Weapon: player2Move,
           player1Address: addressPlayer1,
           player2Address: addressPlayer2,
-          winner: player1Wins
-            ? addressPlayer1
-            : weapon === player2Move
-              ? null
-              : addressPlayer2,
+          winner:
+            Number(weapon) === Number(player2Move)
+              ? null // Mirror contract logic checking for a tie first
+              : player1Wins
+                ? addressPlayer1
+                : addressPlayer2,
           stake: stakeAmount,
         };
 
@@ -182,15 +231,9 @@ function App() {
 
   const handlePlayer1WeaponSelect = (event: ChangeEvent<HTMLInputElement>) => {
     setPlayer1Weapon(Number(event.target.value) as Weapon);
-    console.log(
-      `handlePlayer1WeaponSelect | event.target.value ${event.target.value}`,
-    );
   };
   const handlePlayer2WeaponSelect = (event: ChangeEvent<HTMLInputElement>) => {
     setPlayer2Weapon(Number(event.target.value) as Weapon);
-    console.log(
-      `handlePlayer2WeaponSelect | event.target.value ${event.target.value}`,
-    );
   };
   const handlePlayer1FormSubmit = async (
     event: ChangeEvent<HTMLFormElement>,
@@ -220,13 +263,10 @@ function App() {
 
     const weapon = event.target.weapon.value;
     setPlayer2Weapon(weapon);
-    console.log("weapon", weapon);
-    console.log("contract right now:", contract);
 
     // ** Save Player2's move to the smart contract **
 
     if (contract && signer) {
-      console.log("signer.address", signer.address);
       try {
         await contract.play(weapon, { value: stake });
         console.log("Successfully set weapon on RPS smart contract");
@@ -245,20 +285,6 @@ function App() {
     setGameStatus(GameStatus.AwaitingPlayer1RevealResults);
   };
 
-  const getGameSecret = (contractAddress: string): GameSecret | null => {
-    // ** Retrieve gameSecret from local storage and 'unstringify' its values **
-    const storedGameSecret = localStorage.getItem(
-      `rps_game_${contractAddress}`,
-    );
-    if (!storedGameSecret) return null;
-
-    const gameSecret = JSON.parse(storedGameSecret);
-    const originalGameSecret: GameSecret = {
-      salt: BigInt(gameSecret.salt),
-      weapon: Number(gameSecret.weapon) as Weapon,
-    };
-    return originalGameSecret;
-  };
   const handlePlayer1RevealResultsSubmit = async (
     event: ChangeEvent<HTMLFormElement>,
   ) => {
@@ -277,11 +303,11 @@ function App() {
     const { salt, weapon } = gameSecret;
 
     try {
-      console.log("starting to solve");
+      console.log("Starting to solve");
       const tx = await contract.solve(weapon, salt);
       console.log("Waiting for transaction to be mined");
       await tx.wait();
-      console.log("finished solving");
+      console.log("Finished solving");
       const finalStake = await contract.stake();
       if (Number(finalStake) === 0) {
         const player1Wins = await contract.win(weapon, player2Weapon);
@@ -291,11 +317,12 @@ function App() {
           player2Weapon: player2Weapon,
           player1Address: player1Address!,
           player2Address: player2Address!,
-          winner: player1Wins
-            ? player1Address
-            : weapon === player2Weapon
-              ? null
-              : player2Address,
+          winner:
+            Number(weapon) === Number(player2Weapon)
+              ? null // Mirror contract logic checking for a tie first
+              : player1Wins
+                ? player1Address
+                : player2Address,
           stake: Number(finalStake),
         };
 
@@ -304,9 +331,47 @@ function App() {
         setWinner(gameResult.winner);
         setStake(gameResult.stake);
         setGameStatus(GameStatus.Finished);
+
+        localStorage.removeItem(`rps_game_${contractAddress}`)
       }
     } catch (error) {
       console.error("Error revealing the winner", error);
+    }
+  };
+
+  const handleTimeoutClaim = async (
+    event: ChangeEvent<HTMLFormElement>,
+    player2TimedOut: boolean = true, // Assume the most common case: Player 2 didn't move and Player 1 is calling them on it
+  ) => {
+    event.preventDefault();
+
+    if (!contract) {
+      console.error("Contract not found during timeout claim");
+      return;
+    }
+
+    try {
+      console.log(
+        `Starting timeout claim ${player2TimedOut ? "Player 2 timed out" : "Player 1 timed out"}`,
+      );
+      const tx = await contract[player2TimedOut ? "j2Timeout" : "j1Timeout"]();
+      console.log("Waiting for transaction to be mined");
+      await tx.wait();
+      console.log("Done claiming timeout");
+
+      const stakeAmount = await contract.stake();
+
+      await updateGameStatusAndStates(
+        contractAddress,
+        contract,
+        stakeAmount,
+        player1Address!,
+        player2Address!,
+        player2Weapon,
+        player2TimedOut,
+      );
+    } catch (error) {
+      console.error("Error claiming timeout:", error);
     }
   };
 
@@ -363,6 +428,7 @@ function App() {
             contractAddress={contractAddress}
             currentUserAddress={currentUserAddress}
             player1Address={player1Address}
+            onTimeoutClaim={handleTimeoutClaim}
           />
         )
       )}
@@ -376,6 +442,7 @@ function App() {
           <AwaitingPlayer1RevealResults
             currentUserAddress={currentUserAddress}
             player2Address={player2Address}
+            onTimeoutClaim={(event) => handleTimeoutClaim(event, false)}
           />
         )
       )}
