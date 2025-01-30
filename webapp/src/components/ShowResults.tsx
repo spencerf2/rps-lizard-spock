@@ -1,12 +1,16 @@
+import { Weapon } from "../constants/types";
+
 interface IShowResultsProps {
-  currentUserAddress: string | null;
-  player1Address: string | null;
-  player1Weapon: string | null;
-  player2Address: string | null;
-  player2Weapon: string | null;
+  gameAddress: string;
+  currentUserAddress: string;
+  player1Address: string;
+  player1Weapon: Weapon;
+  player2Address: string;
+  player2Weapon: Weapon;
   winner: string | null;
 }
 function ShowResults({
+  gameAddress,
   currentUserAddress,
   player1Address,
   player1Weapon,
@@ -14,38 +18,57 @@ function ShowResults({
   player2Weapon,
   winner,
 }: IShowResultsProps) {
-  const players = [player1Address, player2Address];
+  const currentViewer =
+    currentUserAddress === player1Address
+      ? "Player 1"
+      : currentUserAddress === player2Address
+        ? "Player 2"
+        : "Spectator";
+
+  const getResultMessage = () => {
+    if (currentViewer === "Spectator") {
+      return winner
+        ? `${winner === player1Address ? "Player 1" : "Player 2"} Won!`
+        : "Game Tied!";
+    }
+
+    if (winner === null) return "Game Tied!";
+    return winner === currentUserAddress ? "You Won!" : "You Lost...";
+  };
+
+  const getWeaponText = (weaponNumber: Weapon) => {
+    return Weapon[weaponNumber] || "Unknown"; // Convert enum number to string
+  };
+
   return (
     <>
-      <h2>
-        Welcome Player{" "}
-        {currentUserAddress === player1Address
-          ? "1"
-          : currentUserAddress === player2Address
-            ? "2"
-            : "Spectator"}
-      </h2>
-      <br />
-
-      <br />
+      <h2>Welcome {currentViewer}!</h2>
       <h3>
-        {players.includes(currentUserAddress) ? "You" : winner}:{" "}
-        {players.includes(currentUserAddress) && currentUserAddress === winner
-          ? "Won"
-          : players.includes(currentUserAddress) &&
-              currentUserAddress !== winner
-            ? "Lost"
-            : "Tied"}
+        Results are in for game
+        <br />
+        <small>{gameAddress}</small>
+        <br />
+        <br />
+        And...
       </h3>
       <br />
+      <h3>{getResultMessage()}</h3>
       <br />
       <h4>
-        {players.includes(currentUserAddress) ? "You" : "Player 1"} chose:{" "}
-        {player1Weapon}
+        {currentViewer === "Spectator"
+          ? "Player 1"
+          : currentUserAddress === player1Address
+            ? "You"
+            : "Player 1"}{" "}
+        chose: {getWeaponText(player1Weapon)}
       </h4>
       <h4>
-        {players.includes(currentUserAddress) ? "You" : "Player 2"} chose:{" "}
-        {player2Weapon}
+        {currentViewer === "Spectator"
+          ? "Player 2"
+          : currentUserAddress === player2Address
+            ? "You"
+            : "Player 2"}{" "}
+        chose: {getWeaponText(player2Weapon)}
       </h4>
     </>
   );

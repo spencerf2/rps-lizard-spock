@@ -1,8 +1,9 @@
 import { ChangeEventHandler } from "react";
 import WeaponOptions from "./WeaponOptions";
+import { Weapon } from "../constants/types";
 
 interface IPlayer2MoveProps {
-  weapon: string | null;
+  weapon: Weapon;
   onWeaponSelect: ChangeEventHandler<HTMLInputElement>;
   onFormSubmit: ChangeEventHandler<HTMLFormElement>;
 }
