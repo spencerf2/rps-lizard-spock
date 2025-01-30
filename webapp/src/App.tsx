@@ -1,6 +1,5 @@
 import { ethers } from "ethers";
 import { ChangeEvent, useState } from "react";
-import rpsLogo from "./assets/Pierre_ciseaux_feuille_lézard_spock_aligned.svg";
 import "./App.css";
 import AwaitingPlayer2 from "./components/AwaitingPlayer2";
 import CreateGame from "./components/CreateGame";
@@ -332,7 +331,7 @@ function App() {
         setStake(gameResult.stake);
         setGameStatus(GameStatus.Finished);
 
-        localStorage.removeItem(`rps_game_${contractAddress}`)
+        localStorage.removeItem(`rps_game_${contractAddress}`);
       }
     } catch (error) {
       console.error("Error revealing the winner", error);
@@ -383,7 +382,7 @@ function App() {
           target="_blank"
         >
           <img
-            src={rpsLogo}
+            src="Pierre_ciseaux_feuille_lézard_spock_aligned.svg"
             className="logo rock-paper-scissors-lizard-spock"
             alt="Rock, Paper, Scissors, Lizard, Spock logo"
           />
