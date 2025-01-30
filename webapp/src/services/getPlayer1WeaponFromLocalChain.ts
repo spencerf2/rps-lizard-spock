@@ -5,8 +5,8 @@ import { Weapon } from "../constants/types";
 async function getPlayer1WeaponFromLocalChain(
   provider: ethers.BrowserProvider | ethers.AbstractProvider | null,
   addressOfContract: string,
-): Promise<undefined | Weapon> {
-  let weapon: undefined | Weapon = undefined;
+): Promise<Weapon> {
+  let weapon: Weapon = Weapon.Null;
 
   if (provider) {
     const selector = ethers.FunctionFragment.getSelector("solve", [
@@ -19,6 +19,8 @@ async function getPlayer1WeaponFromLocalChain(
       console.log("Checking blocks between 0 and", latestBlock);
 
       // * Get all transactions to our contract across all blocks * //
+      // TODO: Create getPlayer1WeaponFromEtherscan. Works well enough with
+      //       Sepolia for now.
       // Inefficient brute force. Only for local use!
       // See getPlayer1WeaponFromEtherscan for production.
       const txns = [];
@@ -48,7 +50,7 @@ async function getPlayer1WeaponFromLocalChain(
         console.log("Decoded solve data:", decodedData);
         weapon = decodedData[0];
       } else {
-        console.log("No solve transaction found");
+        console.log("No solve transaction found. Player 1 may have never revealed the results. Player 2 may have never played. Or there may have been an unexpected error.");
       }
     } catch (error) {
       console.error("Error getting Player 1's weapon:", error);

@@ -1,3 +1,5 @@
+Please Note: This is the original README from creating the Hardhat with TypeScript project. Please see the main README.md in the root directory for RPS-lizard-spock specific instructions.
+
 # Sample Hardhat Project
 
 This project demonstrates a basic Hardhat use case. It comes with a sample contract, a test for that contract, and a Hardhat Ignition module that deploys that contract.

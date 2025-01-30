@@ -1,3 +1,5 @@
+Please Note: This is the original README from creating the Vite with React & TypeScript project. Please see the main README.md in the root directory for RPS-lizard-spock specific instructions.
+
 # React + TypeScript + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
