@@ -2,6 +2,8 @@
 
 ## The name of the game is Rock, Paper, Scissors, Lizard, Spock
 
+[![How to Play Rock Paper Scissors Lizard Spock 🎮](https://cdn.loom.com/sessions/thumbnails/595f54455d1a4518ac27e369a76f7ae5-ede5485d647fb201-full-play.gif)](https://www.loom.com/share/595f54455d1a4518ac27e369a76f7ae5)
+
 ### Requirements
 
 - Node.js version 20.18 or higher
